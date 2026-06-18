@@ -1,5 +1,23 @@
 const mongoose = require('mongoose');
 
+// Sous-schéma pour les réponses aux commentaires (Fx8)
+const ReplySchema = new mongoose.Schema({
+  authId: { 
+    type: Number, 
+    required: true 
+  },
+  text: { 
+    type: String, 
+    required: true, 
+    trim: true,
+    maxlength: 280 
+  },
+  createdAt: { 
+    type: Date, 
+    default: Date.now 
+  }
+});
+
 const PostSchema = new mongoose.Schema({
   authId: {
     type: Number,
@@ -19,8 +37,9 @@ const PostSchema = new mongoose.Schema({
   comments: [
     {
       authId: { type: Number, required: true },
-      text: { type: String, required: true, trim: true },
-      createdAt: { type: Date, default: Date.now }
+      text: { type: String, required: true, trim: true, maxlength: 280 },
+      createdAt: { type: Date, default: Date.now },
+      replies: [ReplySchema] // <-- AJOUT ICI : Un commentaire peut maintenant recevoir des réponses
     }
   ]
 }, {

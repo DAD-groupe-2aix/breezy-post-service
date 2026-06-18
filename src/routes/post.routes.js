@@ -1,18 +1,25 @@
 const express = require('express');
 const router = express.Router();
-
-// On importe le contrôleur du service de publication
 const postController = require('../controllers/post.controller');
 
-// Route pour créer un post -> POST http://localhost:3002/api/posts
+// Créer un post
 router.post('/', postController.createPost);
 
-// Route pour récupérer tous les posts -> GET http://localhost:3002/api/posts
+// Récupérer tous les posts (Fil global)
 router.get('/', postController.getAllPosts);
 
-// Route pour liker/unliker un post -> PUT http://localhost:3002/api/posts/:id/like
-router.put('/:id/like', postController.likePost);
+// Récupérer les posts d'un utilisateur précis
+router.get('/user/:authId', postController.getUserPosts);
 
-// Route pour ajouter un commentaire -> POST http://localhost:3002/api/posts/:id/comment
+// Liker / Unliker un post
+router.post('/:id/like', postController.likePost);
+
+// Ajouter un commentaire
 router.post('/:id/comment', postController.addComment);
+
+// Répondre à un commentaire spécifique (Ligne qui posait problème)
+router.post('/:id/comments/:commentId/reply', postController.replyToComment);
+
+// Route pour le fil d'actualité personnalisé
+router.get('/feed/:authId', postController.getFeedPosts);
 module.exports = router;
