@@ -1,6 +1,8 @@
 const axios = require('axios');
 const Post = require('../models/post.model');
 
+const USER_SERVICE_URL = process.env.USER_SERVICE_URL || 'http://localhost:3001';
+
 // Fx3. Fonction pour créer une nouvelle publication (avec vérification utilisateur, statut de modération et limite)
 exports.createPost = async (req, res) => {
   try {
@@ -9,7 +11,7 @@ exports.createPost = async (req, res) => {
     // 1. Coup de fil au User Service pour vérifier si l'utilisateur existe
     let userProfile;
     try {
-      const response = await axios.get(`http://localhost:3001/api/users/profile/${authId}`);
+      const response = await axios.get(`${USER_SERVICE_URL}/api/users/profile/${authId}`);
       userProfile = response.data; // On récupère l'objet profil de l'utilisateur
     } catch (error) {
       return res.status(400).json({ 
@@ -184,7 +186,7 @@ exports.getFeedPosts = async (req, res) => {
     // 1. On demande le profil au User Service pour récupérer ses abonnements (following)
     let following = [];
     try {
-      const userResponse = await axios.get(`http://localhost:3001/api/users/profile/${authId}`);
+      const userResponse = await axios.get(`${USER_SERVICE_URL}/api/users/profile/${authId}`);
       following = userResponse.data.following || []; 
     } catch (error) {
       return res.status(404).json({ message: "Impossible de récupérer les abonnements de l'utilisateur." });
