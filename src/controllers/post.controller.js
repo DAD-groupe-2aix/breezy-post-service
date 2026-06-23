@@ -122,6 +122,36 @@ exports.addComment = async (req, res) => {
     res.status(500).json({ message: "Erreur lors de l'ajout du commentaire.", error: error.message });
   }
 };
+// Liker / Unliker un commentaire (Toggle)
+exports.likeComment = async (req, res) => {
+  try {
+    const { id, commentId } = req.params;
+    const { authId } = req.body;
+
+    const post = await Post.findById(id);
+    if (!post) {
+      return res.status(404).json({ message: "Publication introuvable." });
+    }
+
+    const comment = post.comments.id(commentId);
+    if (!comment) {
+      return res.status(404).json({ message: "Commentaire introuvable." });
+    }
+
+    const hasLiked = comment.likes.includes(authId);
+    if (hasLiked) {
+      comment.likes = comment.likes.filter((userId) => userId !== authId);
+    } else {
+      comment.likes.push(authId);
+    }
+
+    await post.save();
+    res.status(200).json({ message: hasLiked ? "Like retiré !" : "Commentaire liké !", post });
+  } catch (error) {
+    res.status(500).json({ message: "Erreur lors de la gestion du like.", error: error.message });
+  }
+};
+
 
 // Fx4 / Fx11. Récupérer toutes les publications d'un utilisateur spécifique
 exports.getUserPosts = async (req, res) => {

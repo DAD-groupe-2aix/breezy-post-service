@@ -17,6 +17,9 @@ router.post('/:id/like', postController.likePost);
 // Ajouter un commentaire
 router.post('/:id/comment', postController.addComment);
 
+router.post('/:id/comments/:commentId/like', postController.likeComment);
+
+
 // Répondre à un commentaire spécifique (Ligne qui posait problème)
 router.post('/:id/comments/:commentId/reply', postController.replyToComment);
 

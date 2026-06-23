@@ -34,12 +34,13 @@ const PostSchema = new mongoose.Schema({
       type: Number
     }
   ],
-  comments: [
+    comments: [
     {
       authId: { type: Number, required: true },
       text: { type: String, required: true, trim: true, maxlength: 280 },
+      likes: [{ type: Number }],
       createdAt: { type: Date, default: Date.now },
-      replies: [ReplySchema] // <-- AJOUT ICI : Un commentaire peut maintenant recevoir des réponses
+      replies: [ReplySchema]
     }
   ]
 }, {
