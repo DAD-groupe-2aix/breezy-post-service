@@ -11,6 +11,9 @@ router.get('/', postController.getAllPosts);
 // Récupérer les posts d'un utilisateur précis
 router.get('/user/:authId', postController.getUserPosts);
 
+// Modifier un post
+router.put('/:id', postController.editPost);
+
 // Supprimer un post
 router.delete('/:id', postController.deletePost);
 

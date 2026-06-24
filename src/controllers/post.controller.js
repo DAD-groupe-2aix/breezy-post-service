@@ -208,6 +208,38 @@ exports.replyToComment = async (req, res) => {
   }
 };
 
+// Modifier le contenu d'un post (réservé à son auteur)
+exports.editPost = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { content } = req.body;
+    const requesterId = parseInt(req.headers['x-user-id']);
+
+    if (!content || content.trim() === '') {
+      return res.status(400).json({ message: "Le contenu ne peut pas être vide." });
+    }
+    if (content.length > 280) {
+      return res.status(400).json({ message: "Le message est trop long (max 280 caractères)." });
+    }
+
+    const post = await Post.findById(id);
+    if (!post) {
+      return res.status(404).json({ message: "Publication introuvable." });
+    }
+    if (post.authId !== requesterId) {
+      return res.status(403).json({ message: "Vous ne pouvez modifier que vos propres publications." });
+    }
+
+    post.content = content.trim();
+    post.editedAt = new Date();
+    await post.save();
+
+    res.status(200).json({ message: "Publication modifiée avec succès.", post });
+  } catch (error) {
+    res.status(500).json({ message: "Erreur lors de la modification.", error: error.message });
+  }
+};
+
 // Supprimer un post (réservé à son auteur)
 exports.deletePost = async (req, res) => {
   try {
