@@ -11,6 +11,9 @@ router.get('/', postController.getAllPosts);
 // Récupérer les posts d'un utilisateur précis
 router.get('/user/:authId', postController.getUserPosts);
 
+// Supprimer un post
+router.delete('/:id', postController.deletePost);
+
 // Liker / Unliker un post
 router.post('/:id/like', postController.likePost);
 
