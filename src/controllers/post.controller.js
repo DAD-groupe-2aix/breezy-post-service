@@ -208,6 +208,28 @@ exports.replyToComment = async (req, res) => {
   }
 };
 
+// Supprimer un post (réservé à son auteur)
+exports.deletePost = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const requesterId = parseInt(req.headers['x-user-id']);
+
+    const post = await Post.findById(id);
+    if (!post) {
+      return res.status(404).json({ message: "Publication introuvable." });
+    }
+
+    if (post.authId !== requesterId) {
+      return res.status(403).json({ message: "Vous ne pouvez supprimer que vos propres publications." });
+    }
+
+    await post.deleteOne();
+    res.status(200).json({ message: "Publication supprimée avec succès." });
+  } catch (error) {
+    res.status(500).json({ message: "Erreur lors de la suppression.", error: error.message });
+  }
+};
+
 // Fx5. Récupérer le fil d'actualité personnalisé (les posts des utilisateurs suivis)
 exports.getFeedPosts = async (req, res) => {
   try {
