@@ -86,6 +86,17 @@ exports.likePost = async (req, res) => {
     } else {
       post.likes.push(authId);
       await post.save();
+
+      // Notification au propriétaire du post (sauf si c'est lui-même qui like)
+      if (post.authId !== authId) {
+        axios.post(`${USER_SERVICE_URL}/api/users/notifications`, {
+          recipientId: post.authId,
+          senderId: authId,
+          type: 'like',
+          postId: id,
+        }).catch(() => {});
+      }
+
       return res.status(200).json({ message: "Post liké !", post });
     }
 
