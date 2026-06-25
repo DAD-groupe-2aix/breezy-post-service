@@ -2,19 +2,19 @@ const mongoose = require('mongoose');
 
 // Sous-schéma pour les réponses aux commentaires (Fx8)
 const ReplySchema = new mongoose.Schema({
-  authId: { 
-    type: Number, 
-    required: true 
+  authId: {
+    type: Number,
+    required: true
   },
-  text: { 
-    type: String, 
-    required: true, 
+  text: {
+    type: String,
+    required: true,
     trim: true,
-    maxlength: 280 
+    maxlength: 280
   },
-  createdAt: { 
-    type: Date, 
-    default: Date.now 
+  createdAt: {
+    type: Date,
+    default: Date.now
   }
 });
 
@@ -29,6 +29,13 @@ const PostSchema = new mongoose.Schema({
     maxlength: 280,
     trim: true
   },
+
+  images: [
+    {
+      type: String
+    }
+  ],
+
   editedAt: {
     type: Date,
     default: null
@@ -38,15 +45,17 @@ const PostSchema = new mongoose.Schema({
       type: Number
     }
   ],
-    comments: [
+  comments: [
     {
       authId: { type: Number, required: true },
       text: { type: String, required: true, trim: true, maxlength: 280 },
+      images: [{ type: String }],
       likes: [{ type: Number }],
       createdAt: { type: Date, default: Date.now },
       replies: [ReplySchema]
     }
   ]
+
 }, {
   timestamps: true
 });

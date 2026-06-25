@@ -6,7 +6,7 @@ const USER_SERVICE_URL = process.env.USER_SERVICE_URL || 'http://localhost:3001'
 // Fx3. Fonction pour créer une nouvelle publication (avec vérification utilisateur, statut de modération et limite)
 exports.createPost = async (req, res) => {
   try {
-    const { authId, content } = req.body;
+    const { authId, content, images } = req.body;
 
     // 1. Coup de fil au User Service pour vérifier si l'utilisateur existe
     let userProfile;
@@ -14,15 +14,15 @@ exports.createPost = async (req, res) => {
       const response = await axios.get(`${USER_SERVICE_URL}/api/users/profile/${authId}`);
       userProfile = response.data; // On récupère l'objet profil de l'utilisateur
     } catch (error) {
-      return res.status(400).json({ 
-        message: "Action impossible : l'utilisateur n'existe pas dans le User Service." 
+      return res.status(400).json({
+        message: "Action impossible : l'utilisateur n'existe pas dans le User Service."
       });
     }
 
     // --- SÉCURITÉ : VÉRIFICATION DU STATUT DE MODÉRATION (Fx21) ---
     if (userProfile && (userProfile.status === 'suspended' || userProfile.status === 'banned')) {
-      return res.status(403).json({ 
-        message: `Action impossible : votre compte est actuellement ${userProfile.status}.` 
+      return res.status(403).json({
+        message: `Action impossible : votre compte est actuellement ${userProfile.status}.`
       });
     }
     // -----------------------------------------------------------------
@@ -34,16 +34,18 @@ exports.createPost = async (req, res) => {
 
     // 3. Validation de la limite des 280 caractères (Consigne Fx3)
     if (content.length > 280) {
-      return res.status(400).json({ 
-        message: `Le message est trop long (${content.length} caractères). La limite est de 280 caractères.` 
+      return res.status(400).json({
+        message: `Le message est trop long (${content.length} caractères). La limite est de 280 caractères.`
       });
     }
 
     // 4. Création et sauvegarde si tout est OK
     const newPost = new Post({
       authId,
-      content
+      content,
+      images: Array.isArray(images) ? images.slice(0, 4) : []
     });
+
 
     await newPost.save();
     res.status(201).json({ message: "Publication créée avec succès !", post: newPost });
@@ -66,8 +68,8 @@ exports.getAllPosts = async (req, res) => {
 // Fx6. Fonction pour Liker / Unliker un post (Toggle)
 exports.likePost = async (req, res) => {
   try {
-    const { id } = req.params; 
-    const { authId } = req.body; 
+    const { id } = req.params;
+    const { authId } = req.body;
 
     const post = await Post.findById(id);
 
@@ -95,8 +97,8 @@ exports.likePost = async (req, res) => {
 // Fx7. Fonction pour ajouter un commentaire à un post
 exports.addComment = async (req, res) => {
   try {
-    const { id } = req.params; 
-    const { authId, text } = req.body; 
+    const { id } = req.params;
+    const { authId, text, images } = req.body;
 
     if (!text || text.trim() === "") {
       return res.status(400).json({ message: "Le commentaire ne peut pas être vide." });
@@ -110,8 +112,10 @@ exports.addComment = async (req, res) => {
 
     const newComment = {
       authId,
-      text
+      text,
+      images: Array.isArray(images) ? images.slice(0, 4) : []
     };
+
 
     post.comments.push(newComment);
     await post.save();
@@ -156,15 +160,15 @@ exports.likeComment = async (req, res) => {
 // Fx4 / Fx11. Récupérer toutes les publications d'un utilisateur spécifique
 exports.getUserPosts = async (req, res) => {
   try {
-    const { authId } = req.params; 
+    const { authId } = req.params;
 
     const posts = await Post.find({ authId: authId }).sort({ createdAt: -1 });
 
     res.status(200).json(posts);
   } catch (error) {
-    res.status(500).json({ 
-      message: "Erreur lors de la récupération des publications de l'utilisateur.", 
-      error: error.message 
+    res.status(500).json({
+      message: "Erreur lors de la récupération des publications de l'utilisateur.",
+      error: error.message
     });
   }
 };
@@ -172,8 +176,8 @@ exports.getUserPosts = async (req, res) => {
 // Fx8. Fonction pour répondre à un commentaire spécifique sur un post
 exports.replyToComment = async (req, res) => {
   try {
-    const { id, commentId } = req.params; 
-    const { authId, text } = req.body;    
+    const { id, commentId } = req.params;
+    const { authId, text } = req.body;
 
     if (!text || text.trim() === "") {
       return res.status(400).json({ message: "La réponse ne peut pas être vide." });
@@ -265,13 +269,13 @@ exports.deletePost = async (req, res) => {
 // Fx5. Récupérer le fil d'actualité personnalisé (les posts des utilisateurs suivis)
 exports.getFeedPosts = async (req, res) => {
   try {
-    const { authId } = req.params; 
+    const { authId } = req.params;
 
     // 1. On demande le profil au User Service pour récupérer ses abonnements (following)
     let following = [];
     try {
       const userResponse = await axios.get(`${USER_SERVICE_URL}/api/users/profile/${authId}`);
-      following = userResponse.data.following || []; 
+      following = userResponse.data.following || [];
     } catch (error) {
       return res.status(404).json({ message: "Impossible de récupérer les abonnements de l'utilisateur." });
     }
